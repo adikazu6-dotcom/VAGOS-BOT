@@ -1,5 +1,17 @@
 require('dotenv').config();
 const { Client, GatewayIntentBits, EmbedBuilder, REST, Routes, ApplicationCommandOptionType } = require('discord.js');
+const http = require('http');
+
+// Prosty serwer HTTP wymagany przez darmowy Web Service na Renderze
+const server = http.createServer((req, res) => {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('Vagos Bot is running 24/7!');
+});
+
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+    console.log(`Serwer HTTP nasłuchuje na porcie ${PORT}`);
+});
 
 const client = new Client({ 
     intents: [
@@ -90,7 +102,6 @@ client.on('interactionCreate', async interaction => {
             await member.roles.add(roleExtra).catch(() => {});
             await member.roles.remove(roleNowy).catch(() => {});
 
-            // 1. Pełny embed wysyła się na kanał, na którym użyto komendy
             const embed = new EmbedBuilder()
                 .setColor('#2ECC71')
                 .setDescription(
@@ -106,7 +117,6 @@ client.on('interactionCreate', async interaction => {
                 embeds: [embed]
             });
 
-            // 2. Na kanał wyników wysyła się TYLKO krótka wzmianka z ptaszkiem (zawsze, nawet jeśli użyto komendy na kanale wyników)
             const resultsChannel = interaction.guild.channels.cache.get(RESULTS_CHANNEL_ID);
             if (resultsChannel) {
                 await resultsChannel.send({
@@ -136,13 +146,11 @@ client.on('interactionCreate', async interaction => {
                     `**Powodzenia następnym razem!**`
                 );
 
-            // 1. Embed z odrzuceniem na kanał komendy
             await interaction.channel.send({
                 content: `<@${targetUser.id}> ❌`,
                 embeds: [embed]
             });
 
-            // 2. Krótka wzmianka z krzyżykiem na kanał wyników
             const resultsChannel = interaction.guild.channels.cache.get(RESULTS_CHANNEL_ID);
             if (resultsChannel) {
                 await resultsChannel.send({
